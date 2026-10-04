@@ -54942,6 +54942,12 @@
               const t = e.getTime(),
                 i = e.getRecording(),
                 r = e.getCarStyle();
+              // Upload a fresh finish even when an older browser-local record is faster.
+              if(window.BWWPoly && (0,C.gn)(this,jr,"f")) {
+                const track=(0,C.gn)(this,Yr,"f").getId();
+                const previous=(0,C.gn)(this,Br,"f").getRecordTime((0,C.gn)(this,Dr,"f").profileSlot,track);
+                if(previous && !t.lessThan(previous))void window.BWWPoly.submit(track,t.numberOfFrames,i.serialize(),r.serialize()).catch(()=>{});
+              }
               let a;
               const s = (0, C.gn)(this, Ua, "f");
               if (
@@ -68556,6 +68562,7 @@
         (Vh = new WeakMap()),
         (Dh = new WeakSet()),
         (Hh = async function (e, t, n, i, r) {
+          if(window.BWWPoly){const profile=(0,C.gn)(this,Oh,"f").getUserProfile(e);await window.BWWPoly.submit(t,i.numberOfFrames,r.serialize(),profile.carStyle.serialize());return null;}
           if ((0, C.gn)(this, Fh, "f").determinismState != Js.Ok) return null;
           const a = (0, C.gn)(this, Oh, "f").getUserProfile(e);
           if (null == a) return null;
@@ -68660,6 +68667,7 @@
           return s;
         }
         async syncRecord(e, t, n) {
+          if(window.BWWPoly)return null; // Site accounts must not inherit another local game profile’s records.
           if ((0, C.gn)(this, Fh, "f").determinismState != Js.Ok) return null;
           const i = this.getRecord(e, t);
           return null != i &&
@@ -72197,6 +72205,7 @@
             ku.set(this, "v6/"));
         }
         getLeaderboard(e, t, n, i, r) {
+          if(window.BWWPoly)return window.BWWPoly.board(t,n,i).then(d=>({total:d.total,entries:d.entries.map(x=>({id:x.id,nickname:x.nickname,countryCode:null,time:new yt.A(x.frames),carStyle:jt.A.deserializeSafe(x.carStyle),verifiedState:0,isSelf:x.userId===window.BWWPoly.user?.id})),userEntry:d.userEntry?{position:d.userEntry.position,time:new yt.A(d.userEntry.frames),id:d.userEntry.id}:null}));
           let a =
             "https://vps.kodub.com/" +
             (0, C.gn)(this, ku, "f") +
@@ -72407,6 +72416,7 @@
           );
         }
         getLeaderboardUserEntry(e, t, n) {
+          if(window.BWWPoly)return window.BWWPoly.board(t,0,1).then(d=>d.userEntry?{position:d.userEntry.position,time:new yt.A(d.userEntry.frames),id:d.userEntry.id}:null);
           const i =
             "https://vps.kodub.com/" +
             (0, C.gn)(this, ku, "f") +
@@ -72465,6 +72475,7 @@
           });
         }
         getRecordings(e) {
+          if(window.BWWPoly)return window.BWWPoly.recordings(e).then(rows=>rows.map(r=>r?{recording:ie.A.deserialize(r.recording),time:new yt.A(r.frames),carStyle:jt.A.deserializeSafe(r.carStyle),verifiedState:0}:null));
           const t =
             "https://vps.kodub.com/" +
             (0, C.gn)(this, ku, "f") +
@@ -72707,6 +72718,7 @@
           });
         }
         submitUserProfile(e, t, n, i) {
+          if(window.BWWPoly)return Promise.resolve();
           return new Promise((r, a) => {
             const s =
                 "https://vps.kodub.com/" + (0, C.gn)(this, ku, "f") + "user",
@@ -72872,6 +72884,7 @@
           });
         }
         getUser(e) {
+          if(window.BWWPoly)return Promise.resolve(null);
           return new Promise((t, n) => {
             const i =
                 "https://vps.kodub.com/" +
@@ -75609,6 +75622,10 @@
               q,
             ),
             J = 0;
+          if(window.BWWPoly)window.BWWPoly.ready({
+            tracks:()=> Jh.get(y).map(t=>({id:t.id,name:t.trackMetadata.name})),
+            watch:async r=>{const track=Jh.get(y).find(t=>t.id===r.track);if(!track)throw Error('This replay requires an official track from this game version.');const recording=ie.A.deserialize(r.recording);if(!recording)throw Error('Invalid replay.');j(track.trackMetadata,track.trackData,'official',[{recording,carStyle:jt.A.deserializeSafe(r.carStyle),nickname:r.nickname,time:new yt.A(r.frames),isSelf:false}]);}
+          });
           (h.setAnimationLoop(function (e) {
             const t = Math.max(e - J, 0) / 1e3;
             ((J = e), Q.update(t), k.update(t));
